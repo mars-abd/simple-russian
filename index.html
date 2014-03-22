@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Simple Russian</title>
+		<style type="text/css">
+			#text-input {
+				width: 850px;
+				height: 100px;
+			}
+		</style>
+	</head>
+	<body>
+		<form id="form">
+            <textarea id="text-input">жизнь пища ясно ёлка ель прятки село ястреб юла съём лёд ключ орёл клиент если подъём йод ёжик ёмкость машина щука щипцы живопись жим жир пассажир жертва железо жук жаба обжора жёсткий 
+            чётный часть честь черепаха чёрный девчёнка чаща чаша недостатки согласная размышления капюшон ясность тибет щавель щёчка шерсть честь семья мягкий леденец компьютер память счастье клюют шьём письмо складывающийся
+            съел помоем  тренажёр обжора  подъехать строящаяся вылью подъедут</textarea>
+            <input type="submit" />
+		</form>
+
+		<div id="result"></div>
+
+		<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+		<script type="text/javascript">
+			(function($) {
+				var $textInput = $('#text-input'),
+					$form = $('#form'),
+					$result = $('#result'),
+					consonantsLetters = ['б','в','г','д','ж','з','к','л','м','н','п','р','с','т','ф','х','ц','ч','ш','щ'],
+					vowelsLetters = ['а','я','о','ё','у','ю','э','е','и','ы'],
+					complexVowelsLetters = ['е','ё','ю','я'],
+					complexSimpleVowelsLetters = {
+						'е': 'э',
+						'ё': 'о',
+						'ю': 'у',
+						'я': 'а'
+					};
+
+				$form.on('submit', function(ev) {
+					ev.preventDefault();
+
+					var inputedText = $.trim($textInput.val()),
+						words = inputedText.split(/\s+/g),
+						result = [];
+
+					for (var i = 0, wordsCount = words.length; i < wordsCount; i++) {
+						(function() {
+							var word = words[i],
+								lettersCount = word.length,
+								newWord = [];
+
+							for (var j = 0; j < lettersCount; j++) {
+								if ($.inArray(word[j], complexVowelsLetters) != -1) { // е, ё, ю, я
+									if (j == 0) { // первая буква в слове
+										newWord.push('й' + complexSimpleVowelsLetters[word[j]]);
+									} else if ($.inArray(word[j-1], vowelsLetters) != -1) { // если впереди гласная
+										newWord.push('й' + complexSimpleVowelsLetters[word[j]]);
+									} else if ($.inArray(word[j-1], consonantsLetters) != -1) { // если впереди согласная
+										if (word[j-1] == 'ж' || word[j-1] == 'ш' || word[j-1] == 'ц') { // ж не бывает мягкая, ш и ц всегда твёрдая
+											newWord.push(complexSimpleVowelsLetters[word[j]]);
+										} else {
+											newWord.push('\'' + complexSimpleVowelsLetters[word[j]]);
+										}
+									} else if (word[j-1] == 'ъ') {
+										newWord[newWord.length - 1] = 'й';
+										newWord.push(complexSimpleVowelsLetters[word[j]]);
+									} else if (word[j-1] == 'ь') {
+										if (word[j-2] == 'ш') { // ш всегда твёрдая
+											newWord.pop();
+										} else {
+											newWord[newWord.length - 1] = '\'';
+										}
+										newWord.push('й' + complexSimpleVowelsLetters[word[j]]);
+										console.log(newWord)
+									}
+								} else {
+									newWord.push(word[j]);
+								}
+							}
+
+							newWord = newWord.join('')
+								.replace('жи', 'жы')
+								.replace('ши', 'шы')
+								.replace('щ', 'ш\'')
+								.replace('ь', '\'')
+								.replace('ь', '\'')
+								.replace('\'\'', '\'')
+							;
+
+							result.push(newWord);
+						})();
+					}
+
+					$result.html(result.join(' '));
+				});
+			})(jQuery);
+		</script>
+	</body>
+</html>
